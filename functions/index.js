@@ -2,10 +2,11 @@ const pick = require("../util/pick"),
   fetch = require("node-fetch"),
   shouldCompress = require("../util/shouldCompress"),
   compress = require("../util/compress"),
-  DEFAULT_QUALITY = 40;
+  DEFAULT_QUALITY = 80; // Set default quality to 80
+
 exports.handler = async (e, t) => {
   let { url: r } = e.queryStringParameters,
-    { jpeg: s, bw: o, l: a } = e.queryStringParameters;
+    { jpeg: s, l: a } = e.queryStringParameters; // Removed 'bw' parameter
   if (!r)
     return { statusCode: 200, body: "Bandwidth Hero Data Compression Service" };
   try {
@@ -14,8 +15,8 @@ exports.handler = async (e, t) => {
   Array.isArray(r) && (r = r.join("&url=")),
     (r = r.replace(/http:\/\/1\.1\.\d\.\d\/bmi\/(https?:\/\/)?/i, "http://"));
   let d = !s,
-    n = 0 != o,
-    i = parseInt(a, 10) || 40;
+    i = parseInt(a, 10) || DEFAULT_QUALITY; // Set default quality to 80
+
   try {
     let h = {},
       { data: c, type: l } = await fetch(r, {
@@ -46,7 +47,8 @@ exports.handler = async (e, t) => {
         }
       );
     {
-      let { err: u, output: y, headers: g } = await compress(c, d, n, i, p);
+      // Call compress with width 300 and quality 80
+      let { err: u, output: y, headers: g } = await compress(c, d, 300, i, p);
       if (u) throw (console.log("Conversion failed: ", r), u);
       console.log(`From ${p}, Saved: ${(p - y.length) / p}%`);
       let $ = y.toString("base64");
