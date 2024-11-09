@@ -8,7 +8,7 @@ const sharp = require("sharp");
  * @param {number} quality - Kualitas gambar (default: 80)
  * @param {number} originalSize - Ukuran asli gambar
  */
-function compress(imagePath, useWebp, width = 300, quality = 80, originalSize) {
+function compress(imagePath, useJPEG, width = 300, quality = 80, originalSize) {
   let format = useWebp ? "webp" : "jpeg";
 
   return sharp(imagePath)
