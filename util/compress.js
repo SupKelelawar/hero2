@@ -1,17 +1,16 @@
-// Compresses an image using Sharp library
 const sharp = require("sharp");
 
 /**
  * Mengompres gambar dengan pengaturan lebar dan kualitas
- * @param {Buffer} imagePath - Path gambar asli
- * @param {boolean} useJPEG - Format gambar (true untuk WebP, false untuk JPEG)
- * @param {number} quality - Kualitas gambar (default: 80)
+ * @param {Buffer} data - Buffer gambar asli
+ * @param {number} width - Lebar yang diinginkan (default: 300)
+ * @param {number} quality - Kualitas yang diinginkan (default: 80)
  * @param {number} originalSize - Ukuran asli gambar
  */
-function compress(imagePath, useJPEG, width = 300, quality = 80, originalSize) {
-  let format = useWebp ? "webp" : "jpeg";
+function compress(data, width = 300, quality = 80, originalSize) {
+  let format = "jpeg"; // Set format to jpeg only
 
-  return sharp(imagePath)
+  return sharp(data)
     .resize(width) // Mengatur lebar gambar menjadi 300
     .toFormat(format, { quality, progressive: true, optimizeScans: true })
     .toBuffer({ resolveWithObject: true })
