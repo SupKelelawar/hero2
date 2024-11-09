@@ -2,7 +2,7 @@ const pick = require("../util/pick"),
   fetch = require("node-fetch"),
   shouldCompress = require("../util/shouldCompress"),
   compress = require("../util/compress"),
-  DEFAULT_QUALITY = 80; // Set default quality to 80
+  DEFAULT_QUALITY = 80;
 
 exports.handler = async (e, t) => {
   let { url: r } = e.queryStringParameters,
@@ -14,8 +14,7 @@ exports.handler = async (e, t) => {
   } catch {}
   Array.isArray(r) && (r = r.join("&url=")),
     (r = r.replace(/http:\/\/1\.1\.\d\.\d\/bmi\/(https?:\/\/)?/i, "http://"));
-  let d = !s,
-    i = parseInt(a, 10) || DEFAULT_QUALITY; // Set default quality to 80
+  let i = parseInt(a, 10) || DEFAULT_QUALITY; // Set default quality to 80
 
   try {
     let h = {},
@@ -36,7 +35,7 @@ exports.handler = async (e, t) => {
           : { statusCode: e.status || 302 },
       ),
       p = c.length;
-    if (!shouldCompress(l, p, d))
+    if (!shouldCompress(l, p, true)) // Set `true` to always compress as JPEG
       return (
         console.log("Bypassing... Size: ", c.length),
         {
@@ -47,8 +46,8 @@ exports.handler = async (e, t) => {
         }
       );
     {
-      // Call compress with width 300 and quality 80
-      let { err: u, output: y, headers: g } = await compress(c, d, 300, i, p);
+      // Set width to 300 and quality to the provided value (80 by default)
+      let { err: u, output: y, headers: g } = await compress(c, 300, i, p);
       if (u) throw (console.log("Conversion failed: ", r), u);
       console.log(`From ${p}, Saved: ${(p - y.length) / p}%`);
       let $ = y.toString("base64");
