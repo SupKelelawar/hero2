@@ -1,5 +1,5 @@
-const MIN_COMPRESS_LENGTH = 1024; // 1 KB
-const MIN_TRANSPARENT_COMPRESS_LENGTH = 10240; // 10 KB
+const MIN_COMPRESS_LENGTH = 1024;
+const MIN_TRANSPARENT_COMPRESS_LENGTH = MIN_COMPRESS_LENGTH * 100;
 
 /**
  * Memeriksa apakah gambar harus dikompres
