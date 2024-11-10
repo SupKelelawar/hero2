@@ -7,7 +7,7 @@ const sharp = require("sharp");
  * @param {number} quality - Kualitas yang diinginkan (default: 80)
  * @param {number} originalSize - Ukuran asli gambar
  */
-function compress(data, width = 300, quality = 80, originalSize) {
+function compress(data, width = 300, quality = 85, originalSize) {
   let format = "jpeg"; // Set format to jpeg only
 
   return sharp(data)
