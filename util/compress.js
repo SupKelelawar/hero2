@@ -12,11 +12,18 @@ function compress(data, width = 300, quality = 85, originalSize) {
 
   return sharp(data)
     .resize(width, null, {
-      withoutEnlargement: true,  // Jangan membesarkan gambar
-      kernel: sharp.kernel.lanczos3, // Menggunakan kernel Lanczos untuk kualitas tinggi
-      // Lanczos3 adalah algoritma resampling yang bagus untuk mempertahankan kualitas gambar saat resize
+      withoutEnlargement: true,
+      kernel: sharp.kernel.cubic,  // Alternatif smoothing menggunakan kernel cubic
     })
-    .toFormat(format, { quality })  // Atur kualitas kompresi
+    .modulate({
+      brightness: 1.1,  // Meningkatkan kecerahan sedikit agar gambar lebih jelas
+      saturation: 1.05, // Meningkatkan saturasi sedikit untuk detail warna
+    })
+    .jpeg({
+      quality,
+      progressive: true,  // Menggunakan format progressive untuk jpeg agar lebih halus
+      chromaSubsampling: '4:4:4'  // Menjaga kualitas warna tanpa kompresi subsampling
+    })
     .toBuffer({ resolveWithObject: true })
     .then(({ data, info }) => ({
       err: null,
