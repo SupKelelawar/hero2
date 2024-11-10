@@ -1,22 +1,21 @@
 const pick = require("../util/pick"),
   fetch = require("node-fetch"),
   shouldCompress = require("../util/shouldCompress"),
-  compress = require("../util/compress"),
-  DEFAULT_QUALITY = 85;
+  compress = require("../util/compress");
 
 exports.handler = async (e, t) => {
   let { url: r } = e.queryStringParameters,
     { jpeg: s, l: a } = e.queryStringParameters;
   if (!r) return { statusCode: 200, body: "Bandwidth Hero Data Compression Service" };
-  
+
   try {
     r = JSON.parse(r);
   } catch {}
-  
+
   Array.isArray(r) && (r = r.join("&url="));
   r = r.replace(/http:\/\/1\.1\.\d\.\d\/bmi\/(https?:\/\/)?/i, "http://");
-  
-  let i = parseInt(a, 10) || DEFAULT_QUALITY; // Set default quality to 80
+
+  let i = parseInt(a, 10) || 85; // Set default quality to 85
 
   try {
     let h = {},
@@ -38,9 +37,9 @@ exports.handler = async (e, t) => {
       ),
       p = c.length;
 
-    // Log untuk debugging
+    // Log for debugging
     console.log("Processing image with type:", l, "and size:", p);
-    
+
     if (!shouldCompress(l, p, true)) {
       console.log("Bypassing compression...");
       return {
@@ -51,13 +50,13 @@ exports.handler = async (e, t) => {
       };
     }
 
-    // Set width dan quality sesuai default atau nilai yang diterima
+    // Set width and quality based on the received or default values
     let { err: u, output: y, headers: g } = await compress(c, 300, i, p);
     if (u) throw (console.log("Conversion failed: ", r), u);
-    
+
     console.log(`Compressed from ${p} to ${y.length}, Saved: ${(p - y.length) / p}%`);
     let $ = y.toString("base64");
-    
+
     return {
       statusCode: 200,
       body: $,
