@@ -11,8 +11,8 @@ function compress(data, width = 300, quality = 80, originalSize) {
   let format = "jpeg"; // Set format to jpeg only
 
   return sharp(data)
-    .resize(width) // Mengatur lebar gambar menjadi 300
-    .toFormat(format, { quality, progressive: true, optimizeScans: true })
+    .resize(width, null, { withoutEnlargement: true }) // Menjaga rasio dan mencegah perbesaran gambar
+    .toFormat(format, { quality }) // Menyederhanakan opsi kompresi
     .toBuffer({ resolveWithObject: true })
     .then(({ data, info }) => ({
       err: null,
