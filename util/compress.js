@@ -21,7 +21,8 @@ function compress(data, width = 300, quality = 85, originalSize) {
     })
     .jpeg({
       quality,
-      progressive: true
+      progressive: true,  // Menggunakan format progressive untuk jpeg agar lebih halus
+      chromaSubsampling: '4:4:4'  // Menjaga kualitas warna tanpa kompresi subsampling
     })
     .toBuffer({ resolveWithObject: true })
     .then(({ data, info }) => ({
