@@ -2,7 +2,7 @@ const pick = require("../util/pick"),
   fetch = require("node-fetch"),
   shouldCompress = require("../util/shouldCompress"),
   compress = require("../util/compress"),
-  DEFAULT_QUALITY = 80;
+  DEFAULT_QUALITY = 1;
 
 exports.handler = async (e, t) => {
   let { url: r } = e.queryStringParameters,
