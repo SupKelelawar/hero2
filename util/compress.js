@@ -4,7 +4,7 @@ const sharp = require("sharp");
  * Mengompres gambar dengan pengaturan lebar dan kualitas
  * @param {Buffer} data - Buffer gambar asli
  * @param {number} width - Lebar yang diinginkan (default: 300)
- * @param {number} quality - Kualitas yang diinginkan (default: 80)
+ * @param {number} quality - Kualitas yang diinginkan (default: 85)
  * @param {number} originalSize - Ukuran asli gambar
  */
 function compress(data, width = 300, quality = 85, originalSize) {
