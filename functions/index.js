@@ -18,14 +18,22 @@ exports.handler = async (e, t) => {
   let i = parseInt(a, 10) || 85; // Set default quality to 85
 
   try {
+    // Siapkan headers yang akan digunakan untuk fetch
+    const fetchHeaders = {
+      ...pick(e.headers, ["cookie", "dnt", "referer"]),
+      "user-agent": "Bandwidth-Hero Compressor",
+      "x-forwarded-for": e.headers["x-forwarded-for"] || e.ip,
+      via: "1.1 bandwidth-hero",
+    };
+
+    // Tambahkan Referer untuk gambar dari storage.shngm.id
+    if (r.includes("storage.shngm.id")) {
+      fetchHeaders["Referer"] = "https://app.shinigami.asia/";
+    }
+
     let h = {},
       { data: c, type: l } = await fetch(r, {
-        headers: {
-          ...pick(e.headers, ["cookie", "dnt", "referer"]),
-          "user-agent": "Bandwidth-Hero Compressor",
-          "x-forwarded-for": e.headers["x-forwarded-for"] || e.ip,
-          via: "1.1 bandwidth-hero",
-        },
+        headers: fetchHeaders,
       }).then(async (e) =>
         e.ok
           ? ((h = e.headers),
@@ -37,7 +45,6 @@ exports.handler = async (e, t) => {
       ),
       p = c.length;
 
-    // Log for debugging
     console.log("Processing image with type:", l, "and size:", p);
 
     if (!shouldCompress(l, p, true)) {
@@ -45,22 +52,20 @@ exports.handler = async (e, t) => {
       return {
         statusCode: 200,
         body: c.toString("base64"),
-        isBase64Encoded: !0,
+        isBase64Encoded: true,
         headers: { "content-encoding": "identity", ...h },
       };
     }
 
-    // Set width and quality based on the received or default values
     let { err: u, output: y, headers: g } = await compress(c, 300, i, p);
     if (u) throw (console.log("Conversion failed: ", r), u);
 
     console.log(`Compressed from ${p} to ${y.length}, Saved: ${(p - y.length) / p}%`);
-    let $ = y.toString("base64");
 
     return {
       statusCode: 200,
-      body: $,
-      isBase64Encoded: !0,
+      body: y.toString("base64"),
+      isBase64Encoded: true,
       headers: { "content-encoding": "identity", ...h, ...g },
     };
   } catch (f) {
