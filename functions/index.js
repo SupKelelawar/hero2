@@ -48,7 +48,6 @@ if (!c || !c.length) {
 }
 
 const p = c.length;
-
     console.log("Processing image with type:", l, "and size:", p);
 
     if (!shouldCompress(l, p, true)) {
