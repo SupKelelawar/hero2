@@ -32,18 +32,22 @@ exports.handler = async (e, t) => {
     }
 
     let h = {},
-      { data: c, type: l } = await fetch(r, {
-        headers: fetchHeaders,
-      }).then(async (e) =>
-        e.ok
-          ? ((h = e.headers),
-            {
-              data: await e.buffer(),
-              type: e.headers.get("content-type") || "",
-            })
-          : { statusCode: e.status || 302 },
-      ),
-      p = c.length;
+      const res = await fetch(r, { headers: fetchHeaders });
+
+if (!res.ok) {
+  console.error(`Fetch failed with status ${res.status}`);
+  return { statusCode: res.status || 500, body: `Failed to fetch image.` };
+}
+
+h = res.headers;
+const c = await res.buffer();
+const l = res.headers.get("content-type") || "";
+
+if (!c || !c.length) {
+  return { statusCode: 500, body: "No image data received." };
+}
+
+const p = c.length;
 
     console.log("Processing image with type:", l, "and size:", p);
 
