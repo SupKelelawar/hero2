@@ -1,12 +1,18 @@
-const pick = require("../util/pick"),
-  fetch = require("node-fetch"),
-  shouldCompress = require("../util/shouldCompress"),
-  compress = require("../util/compress");
+const pick = require("../util/pick");
+const fetch = require("node-fetch");
+const shouldCompress = require("../util/shouldCompress");
+const compress = require("../util/compress");
 
 exports.handler = async (e, t) => {
-  let { url: r } = e.queryStringParameters,
-    { jpeg: s, l: a } = e.queryStringParameters;
-  if (!r) return { statusCode: 200, body: "Bandwidth Hero Data Compression Service" };
+  let { url: r } = e.queryStringParameters;
+  let { jpeg: s, l: a } = e.queryStringParameters;
+
+  if (!r) {
+    return {
+      statusCode: 200,
+      body: "Bandwidth Hero Data Compression Service",
+    };
+  }
 
   try {
     r = JSON.parse(r);
@@ -18,7 +24,6 @@ exports.handler = async (e, t) => {
   let i = parseInt(a, 10) || 85; // Set default quality to 85
 
   try {
-    // Siapkan headers yang akan digunakan untuk fetch
     const fetchHeaders = {
       ...pick(e.headers, ["cookie", "dnt", "referer"]),
       "user-agent": "Bandwidth-Hero Compressor",
@@ -26,29 +31,38 @@ exports.handler = async (e, t) => {
       via: "1.1 bandwidth-hero",
     };
 
-    // Tambahkan Referer untuk gambar dari storage.shngm.id
     if (r.includes("storage.shngm.id")) {
       fetchHeaders["Referer"] = "https://app.shinigami.asia/";
     }
 
-    let h = {},
-      const res = await fetch(r, { headers: fetchHeaders });
+    console.log("Fetching URL:", r);
 
-if (!res.ok) {
-  console.error(`Fetch failed with status ${res.status}`);
-  return { statusCode: res.status || 500, body: `Failed to fetch image.` };
-}
+    const res = await fetch(r, { headers: fetchHeaders });
 
-h = res.headers;
-const c = await res.buffer();
-const l = res.headers.get("content-type") || "";
+    console.log("Response status:", res.status);
 
-if (!c || !c.length) {
-  return { statusCode: 500, body: "No image data received." };
-}
+    if (!res.ok) {
+      console.error(`Fetch failed with status ${res.status}`);
+      return {
+        statusCode: res.status || 500,
+        body: `Failed to fetch image.`,
+      };
+    }
 
-const p = c.length;
-    console.log("Processing image with type:", l, "and size:", p);
+    const c = await res.buffer();
+
+    if (!c || !c.length) {
+      return {
+        statusCode: 500,
+        body: "No image data received.",
+      };
+    }
+
+    const l = res.headers.get("content-type") || "";
+    const p = c.length;
+
+    console.log("Content-Type:", l);
+    console.log("Image size:", p);
 
     if (!shouldCompress(l, p, true)) {
       console.log("Bypassing compression...");
@@ -56,12 +70,19 @@ const p = c.length;
         statusCode: 200,
         body: c.toString("base64"),
         isBase64Encoded: true,
-        headers: { "content-encoding": "identity", ...h },
+        headers: {
+          "content-encoding": "identity",
+          ...res.headers,
+        },
       };
     }
 
-    let { err: u, output: y, headers: g } = await compress(c, 300, i, p);
-    if (u) throw (console.log("Conversion failed: ", r), u);
+    const { err: u, output: y, headers: g } = await compress(c, 300, i, p);
+
+    if (u) {
+      console.error("Conversion failed:", r, u);
+      throw u;
+    }
 
     console.log(`Compressed from ${p} to ${y.length}, Saved: ${(p - y.length) / p}%`);
 
@@ -69,10 +90,17 @@ const p = c.length;
       statusCode: 200,
       body: y.toString("base64"),
       isBase64Encoded: true,
-      headers: { "content-encoding": "identity", ...h, ...g },
+      headers: {
+        "content-encoding": "identity",
+        ...res.headers,
+        ...g,
+      },
     };
   } catch (f) {
     console.error(f);
-    return { statusCode: 500, body: f.message || "" };
+    return {
+      statusCode: 500,
+      body: f.message || "",
+    };
   }
 };
