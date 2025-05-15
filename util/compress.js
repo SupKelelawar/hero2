@@ -1,41 +1,33 @@
-const sharp = require("sharp");
+const sharp = require('sharp');
+const DEFAULT_QUALITY = 80;
 
-/**
- * Mengompres gambar dengan pengaturan lebar dan kualitas
- * @param {Buffer} data - Buffer gambar asli
- * @param {number} width - Lebar yang diinginkan (default: 300)
- * @param {number} quality - Kualitas yang diinginkan (default: 85)
- * @param {number} originalSize - Ukuran asli gambar
- */
-function compress(data, width = 300, quality = 85, originalSize) {
-  let format = "jpeg"; // Set format to jpeg only
+exports.compress = async (buffer, webp, grayscale, quality, originSize, maxWidth) => {
+  try {
+    let transformer = sharp(buffer)
+      .rotate()
+      .resize({
+        width: maxWidth,
+        withoutEnlargement: true
+      });
 
-  return sharp(data)
-    .resize(width, null, {
-      withoutEnlargement: true,
-      kernel: sharp.kernel.cubic,  // Alternatif smoothing menggunakan kernel cubic
-    })
-    .modulate({
-      brightness: 1.1,  // Meningkatkan kecerahan sedikit agar gambar lebih jelas
-      saturation: 1.05, // Meningkatkan saturasi sedikit untuk detail warna
-    })
-    .jpeg({
-      quality,
-      progressive: true,  // Menggunakan format progressive untuk jpeg agar lebih halus
-      chromaSubsampling: '4:4:4'  // Menjaga kualitas warna tanpa kompresi subsampling
-    })
-    .toBuffer({ resolveWithObject: true })
-    .then(({ data, info }) => ({
-      err: null,
-      headers: {
-        "content-type": `image/${format}`,
-        "content-length": info.size,
-        "x-original-size": originalSize,
-        "x-bytes-saved": originalSize - info.size,
-      },
-      output: data,
-    }))
-    .catch((err) => ({ err }));
-}
+    if (grayscale) transformer = transformer.grayscale();
 
-module.exports = compress;
+    transformer = webp
+      ? transformer.webp({ quality })
+      : transformer.jpeg({ quality });
+
+    const outputBuffer = await transformer.toBuffer();
+    const metadata = await sharp(outputBuffer).metadata();
+
+    // Set appropriate headers
+    const headers = {
+      'content-type': webp ? 'image/webp' : 'image/jpeg',
+      'cache-control': 'public, max-age=31536000',
+      'content-length': metadata.size.toString()
+    };
+
+    return { err: null, output: outputBuffer, headers };
+  } catch (err) {
+    return { err, output: null, headers: {} };
+  }
+};
