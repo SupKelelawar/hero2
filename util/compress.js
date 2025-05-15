@@ -1,16 +1,14 @@
 const sharp = require('sharp');
-const DEFAULT_QUALITY = 80;
 
 exports.compress = async (buffer, webp, grayscale, quality, originSize, maxWidth) => {
   try {
     let transformer = sharp(buffer)
       .rotate()
-      .resize({
-        width: maxWidth,
-        withoutEnlargement: true
-      });
+      .resize({ width: maxWidth, withoutEnlargement: true });
 
-    if (grayscale) transformer = transformer.grayscale();
+    if (grayscale) {
+      transformer = transformer.grayscale();
+    }
 
     transformer = webp
       ? transformer.webp({ quality })
@@ -19,7 +17,6 @@ exports.compress = async (buffer, webp, grayscale, quality, originSize, maxWidth
     const outputBuffer = await transformer.toBuffer();
     const metadata = await sharp(outputBuffer).metadata();
 
-    // Set appropriate headers
     const headers = {
       'content-type': webp ? 'image/webp' : 'image/jpeg',
       'cache-control': 'public, max-age=31536000',
