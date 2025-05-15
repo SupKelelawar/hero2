@@ -1,7 +1,15 @@
-[functions]
-    directory = "functions/"
+# netlify.toml
+[build]
+  functions = "functions"
 
+# Redirect bare /api (with query params) to the index function
 [[redirects]]
-    from = "/api/*"
-    to = "/.netlify/functions/:splat"
-    status = 200
+  from   = "/api"
+  to     = "/.netlify/functions/index"
+  status = 200
+
+# Also catch any sub-path under /api/
+[[redirects]]
+  from   = "/api/*"
+  to     = "/.netlify/functions/index"
+  status = 200
