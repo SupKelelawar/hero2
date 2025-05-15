@@ -1,36 +1,31 @@
 const fetch = require('node-fetch');
 const { compress } = require('./compress');
 
-const DEFAULT_QUALITY = 80;
-const MAX_WIDTH = 400;
-
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   const { url, w, q } = event.queryStringParameters || {};
 
-  if (!url) {
+  // Pastikan parameter w (width), q (quality), dan url valid
+  const maxWidth = parseInt(w, 10);
+  const quality = parseInt(q, 10);
+
+  if (!url || isNaN(maxWidth) || isNaN(quality)) {
     return {
-      statusCode: 200,
-      body: 'bandwidth-hero-proxy'
+      statusCode: 400,
+      body: 'Missing or invalid "url", "w" (width), or "q" (quality) parameter'
     };
   }
 
   try {
-    const maxWidth = parseInt(w, 10) || MAX_WIDTH;
-    const quality  = parseInt(q, 10) || DEFAULT_QUALITY;
-    const webp     = true;
-    const grayscale = false;
-
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+    if (!resp.ok) throw new Error(`Failed to fetch image: ${resp.status}`);
     const data = await resp.buffer();
 
-    const originSize = data.length;
     const { err, output, headers } = await compress(
       data,
-      webp,
-      grayscale,
+      true,        // webp
+      false,       // grayscale
       quality,
-      originSize,
+      data.length,
       maxWidth
     );
 
@@ -42,6 +37,7 @@ exports.handler = async (event, context) => {
       headers,
       body: output.toString('base64')
     };
+
   } catch (err) {
     console.error(err);
     return {
